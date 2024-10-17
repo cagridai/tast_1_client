@@ -1,7 +1,7 @@
 ## Uygulamaları çalıştırmak için
 
 - Server tarafında gerekli paketler requirements.txt dosyasında bulunmaktadır.
-- Virtual env için server dosyasında terminalden "soruce env/bin/ectivate" komutu yazılır.
+- Virtual env için server dosyasında terminalden "soruce env/bin/activate" komutu yazılır.
 - Server'ı başlatmak için "python3 main.py" komutu terminale yazılır.
 - Server url = http://127.0.0.1:5000/api/v1
 - Unit testi çalıştırmak için gerekli kod "python3 -m unittest test_meetings.py"
