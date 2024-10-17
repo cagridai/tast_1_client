@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { ToastContainer, toast } from "react-toastify";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 interface Meeting {
@@ -42,12 +43,12 @@ export default function MeetingOrganizer() {
   const fetchMeetings = async () => {
     try {
       const response = await fetch("http://127.0.0.1:5000/api/v1/meetings");
-      if (!response.ok) throw new Error("Failed to fetch meetings");
+      if (!response.ok) throw new Error("Toplantılar bulunamadı");
       const data = await response.json();
       setMeetings(data);
     } catch (err) {
-      toast.error("Failed to fetch meetings");
-      setError("Failed to fetch meetings");
+      toast.error("Toplantılar bulunamadı");
+      setError("Toplantılar bulunamadı");
     }
   };
 
@@ -75,18 +76,20 @@ export default function MeetingOrganizer() {
       !formData.start_time ||
       !formData.end_time
     ) {
-      toast.error("All fields except participants are required");
-      setError("All fields except participants are required");
+      toast.error("Katılımcılar hariç tüm alanların doldurulması zorunludur");
+      setError("Katılımcılar hariç tüm alanların doldurulması zorunludur");
       return false;
     }
     if (meetingDate < now) {
-      toast.error("Meeting date and start time must be in the future");
-      setError("Meeting date and start time must be in the future");
+      toast.error(
+        "Toplantı tarihi ve saati gelecek bir zamanda olmak zorundadır",
+      );
+      setError("Toplantı tarihi ve saati gelecek bir zamanda olmak zorundadır");
       return false;
     }
     if (endTime <= meetingDate) {
-      toast.error("End time must be after start time");
-      setError("End time must be after start time");
+      toast.error("Bitiş saati, başlangıç saatinden sonra olmak zorundadır");
+      setError("Bitiş saati, başlangıç saatinden sonra olmak zorundadır");
       return false;
     }
     setError(null);
@@ -107,13 +110,14 @@ export default function MeetingOrganizer() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-      if (!response.ok) throw new Error("Failed to save meeting");
+      if (!response.ok)
+        throw new Error("Toplantıyı kayıt ederken bir hata oluştu");
       await fetchMeetings();
 
       if (editingId) {
-        toast("Meeting successfully edited");
+        toast("Toplantı başarıyla güncellendi");
       } else {
-        toast("Meeting successfully created");
+        toast("Toplantı başarıyla oluşturuldu");
       }
 
       setFormData({
@@ -125,7 +129,8 @@ export default function MeetingOrganizer() {
       });
       setEditingId(null);
     } catch (err) {
-      setError("Failed to save meeting");
+      toast("Toplantıyı kayıt ederken bir hata oluştu");
+      setError("Toplantıyı kayıt ederken bir hata oluştu");
     }
   };
 
@@ -140,12 +145,12 @@ export default function MeetingOrganizer() {
         `http://127.0.0.1:5000/api/v1/meetings/${id}`,
         { method: "DELETE" },
       );
-      if (!response.ok) throw new Error("Failed to delete meeting");
+      if (!response.ok) throw new Error("Toplantıyı silerken bir hata oluştu");
       await fetchMeetings();
-      toast("Meeting successfully deleted");
+      toast("Toplantı başarılı bir şekilde silindi");
     } catch (err) {
-      toast.error("Failed to delete meeting");
-      setError("Failed to delete meeting");
+      toast.error("Toplantıyı silerken bir hata oluştu");
+      setError("Toplantıyı silerken bir hata oluştu");
     }
   };
 
@@ -156,13 +161,13 @@ export default function MeetingOrganizer() {
       <Card className="mb-8">
         <CardHeader>
           <CardTitle>
-            {editingId ? "Edit Meeting" : "Create New Meeting"}
+            {editingId ? "Toplantıyı Düzenle" : "Toplantı Oluştur"}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="topic">Topic</Label>
+              <Label htmlFor="topic">Başlık</Label>
               <Input
                 id="topic"
                 name="topic"
@@ -172,7 +177,7 @@ export default function MeetingOrganizer() {
               />
             </div>
             <div>
-              <Label htmlFor="date">Date</Label>
+              <Label htmlFor="date">Tarih</Label>
               <Input
                 id="date"
                 name="date"
@@ -183,7 +188,7 @@ export default function MeetingOrganizer() {
               />
             </div>
             <div>
-              <Label htmlFor="start_time">Start Time</Label>
+              <Label htmlFor="start_time">Başlangıç Saati</Label>
               <Input
                 id="start_time"
                 name="start_time"
@@ -194,7 +199,7 @@ export default function MeetingOrganizer() {
               />
             </div>
             <div>
-              <Label htmlFor="end_time">End Time</Label>
+              <Label htmlFor="end_time">Bitiş Saati</Label>
               <Input
                 id="end_time"
                 name="end_time"
@@ -205,7 +210,10 @@ export default function MeetingOrganizer() {
               />
             </div>
             <div>
-              <Label htmlFor="participants">Participants</Label>
+              <Label htmlFor="participants">
+                Katılımcılar (Lütfen katılımcıları aralarında virgül olacak
+                şekilde ekleyin)
+              </Label>
               <Input
                 id="participants"
                 name="participants"
@@ -215,7 +223,7 @@ export default function MeetingOrganizer() {
             </div>
             {error && <p className="text-red-500">{error}</p>}
             <Button type="submit">
-              {editingId ? "Update Meeting" : "Create Meeting"}
+              {editingId ? "Toplantıyı Güncelle" : "Toplantı Oluştur"}
             </Button>
           </form>
         </CardContent>
@@ -229,12 +237,12 @@ export default function MeetingOrganizer() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Topic</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Start Time</TableHead>
-                <TableHead>End Time</TableHead>
-                <TableHead>Participants</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead>Başlık</TableHead>
+                <TableHead>Tarih</TableHead>
+                <TableHead>Başlangıç Saati</TableHead>
+                <TableHead>Bitiş Saati</TableHead>
+                <TableHead>Katılımcılar</TableHead>
+                <TableHead>Eylemler</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -252,13 +260,13 @@ export default function MeetingOrganizer() {
                       className="mr-2"
                       onClick={() => handleEdit(meeting)}
                     >
-                      Edit
+                      Düzenle
                     </Button>
                     <Button
                       variant="destructive"
                       onClick={() => handleDelete(meeting.id!)}
                     >
-                      Delete
+                      Sil
                     </Button>
                   </TableCell>
                 </TableRow>
